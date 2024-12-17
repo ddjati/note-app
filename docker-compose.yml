@@ -1,0 +1,22 @@
+services:
+  mysql:
+    image: mysql:8
+    container_name: mysql
+    env_file:
+      - ./.env
+    ports:
+      - '13306:3306'
+    command: --init-file /data/application/init.sql
+    volumes:
+        - ./init_db/init.sql:/data/application/init.sql
+  
+  note-app:
+    container_name: note-app
+    image: danangdjati/note-app:1.0.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '8080:8080'
+    depends_on:
+      - mysql
