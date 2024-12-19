@@ -22,8 +22,12 @@ async fn main() {
     println!("🌟 REST API Service 🌟");
 
     let db_url = std::env::var("DATABASE_URL").expect("env var DATABASE_URL must set");
+    let max_db_connections: u32 = std::env::var("MAX_DB_CONNECTIONS")
+        .expect("env var MAX_DB_CONNECTIONS must set")
+        .parse::<u32>()
+        .expect("MAX_DB_CONNECTIONS expect u32");
     let pool = match MySqlPoolOptions::new()
-        .max_connections(10)
+        .max_connections(max_db_connections)
         .connect(&db_url)
         .await
     {
@@ -32,7 +36,10 @@ async fn main() {
             pool
         }
         Err(err) => {
-            println!("❌ Failed to connect to the database: {:?}", err);
+            println!(
+                "❌ Failed to connect to the database {:?}: {:?}",
+                db_url, err
+            );
             std::process::exit(1);
         }
     };

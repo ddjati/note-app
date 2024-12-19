@@ -8,6 +8,8 @@ RUN cargo build --release
 
 # our final base
 # FROM debian:buster-slim
+# FROM debian:bullseye
+# FROM debian:bookworm-slim
 FROM debian:stable-slim
 
 # copy the build artifact from the build stage
