@@ -22,6 +22,11 @@ build_debug:
 run:
 	@echo "compose down"
 	@docker compose down
+	# @echo "docker remove image"
+	# @docker images | grep 'danangdjati/note-app'
+	# @docker rmi $$(docker images | grep 'danangdjati/note-app')
+	# @docker rmi danangdjati/note-app:latest
+	# @docker compose up --build --force-recreate --no-deps
 	@docker compose -f docker-compose-debug.yml up 
 down:
 	@docker compose -f docker-compose-debug.yml down

@@ -42,16 +42,10 @@ pub async fn note_list_handler(
             (StatusCode::INTERNAL_SERVER_ERROR, Json(error_response))
         })?;
 
-    // Response
-    let note_responses = notes
-        .iter()
-        .map(|note| to_note_response(&note))
-        .collect::<Vec<NoteModelResponse>>();
-
     let json_response = serde_json::json!({
         "status": "ok",
-        "count": note_responses.len(),
-        "notes": note_responses
+        "count": notes.len(),
+        "notes": notes
     });
 
     Ok(Json(json_response))
@@ -63,13 +57,15 @@ pub async fn create_note_handler(
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     // Insert
     let id = uuid::Uuid::new_v4().to_string();
-    let query_result = sqlx::query(r#"INSERT INTO notes (id, title, content) VALUES (?, ?, ?)"#)
-        .bind(&id)
-        .bind(&body.title)
-        .bind(&body.content)
-        .execute(&data.db)
-        .await
-        .map_err(|err: sqlx::Error| err.to_string());
+    let query_result =
+        sqlx::query(r#"INSERT INTO notes (id, title, content, is_published) VALUES (?, ?, ?, ?)"#)
+            .bind(&id)
+            .bind(&body.title)
+            .bind(&body.content)
+            .bind(&body.is_published.unwrap_or(false))
+            .execute(&data.db)
+            .await
+            .map_err(|err: sqlx::Error| err.to_string());
 
     // Duplicate err check
     match query_result {
@@ -102,14 +98,7 @@ pub async fn create_note_handler(
             )
         })?;
 
-    let note_response = serde_json::json!({
-            "status": "success",
-            "data": serde_json::json!({
-                "note": to_note_response(&note)
-        })
-    });
-
-    return Ok(Json(note_response));
+    return Ok(Json(note));
 }
 
 pub async fn get_note_handler(
@@ -128,7 +117,7 @@ pub async fn get_note_handler(
             let note_response = serde_json::json!({
                 "status": "success",
                 "data": serde_json::json!({
-                    "note": to_note_response(&note)
+                    "note": note
                 })
             });
 
@@ -182,16 +171,12 @@ pub async fn edit_note_handler(
         }
     };
 
-    // parse data
-    let is_published = body.is_published.unwrap_or(note.is_published != 0);
-    let i8_is_published = is_published as i8;
-
     // Update (if empty, use old value)
     let update_result =
         sqlx::query(r#"UPDATE notes SET title = ?, content = ?, is_published = ? WHERE id = ?"#)
             .bind(&body.title.unwrap_or_else(|| note.title))
             .bind(&body.content.unwrap_or_else(|| note.content))
-            .bind(i8_is_published)
+            .bind(body.is_published.unwrap_or(false))
             .bind(&id)
             .execute(&data.db)
             .await
@@ -231,7 +216,7 @@ pub async fn edit_note_handler(
     let note_response = serde_json::json!({
         "status": "success",
         "data": serde_json::json!({
-            "note": to_note_response(&updated_note)
+            "note": updated_note
         })
     });
 
