@@ -8,3 +8,4 @@ CREATE TABLE IF NOT EXISTS notes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+INSERT INTO notes (id, title, content, is_published) VALUES('f1cd96ca-0515-49de-be6d-3e238748668e', 'a note', 'here some reminder, mention @danangdjati', TRUE)

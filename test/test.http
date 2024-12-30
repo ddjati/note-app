@@ -10,7 +10,7 @@ content-type: application/json
 
 {
     "title": "a note",
-    "content": "here some reminder, mention @raditzlawliet",
+    "content": "here some reminder, mention @danangdjati",
     "is_published": true
 }
 
@@ -22,7 +22,7 @@ PATCH http://localhost:8080/api/notes/f1cd96ca-0515-49de-be6d-3e238748668e
 content-type: application/json
 
 {
-    "content": "here some reminder, mention @raditzlawliet share and like"
+    "content": "here some reminder, mention @danangdjati share and like"
 }
 
 ### Delete

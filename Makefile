@@ -22,6 +22,10 @@ build_debug:
 run:
 	@echo "Running debug"
 	@cargo run
+runk6:
+	@docker compose -f docker-compose-k6.yml up
+downk6:
+	@docker compose -f docker-compose-k6.yml down
 debug_run: build_debug run
 install_debug: build_debug
 	@echo "Installing debug"
