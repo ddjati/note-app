@@ -7,30 +7,48 @@ services:
     ports:
       - '13306:3306'
     command: --init-file /data/application/init.sql
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
     volumes:
         - ./init_db/init.sql:/data/application/init.sql
   
   note-app:
     container_name: note-app
     image: danangdjati/note-app:1.0.0
+    env_file:
+      - .env
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - '8080:8080'
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
     depends_on:
-      - mysql
+      mysql:
+        condition: service_started
   
   influxdb:
+    container_name: influxdb
     image: influxdb:1.8
     ports:
       - "8186:8086"
     environment:
       - INFLUXDB_DB=k6
-    # depends_on:
-    #   - note-app
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+    depends_on:
+      note-app:
+        condition: service_started
 
   grafana:
+    container_name: grafana
     image: grafana/grafana:latest
     ports:
       - "3001:3000"
@@ -40,18 +58,31 @@ services:
       - GF_AUTH_BASIC_ENABLED=false
     volumes:
       - ./grafana:/etc/grafana/provisioning/
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
     depends_on:
-      - influxdb
+      influxdb:
+        condition: service_started
 
   k6:
+    container_name: k6
     image: grafana/k6:latest
     ports:
       - "6565:6565"
     environment:
-      - K6_OUT=influxdb=http://influxdb:8186/k6
+      - K6_OUT=influxdb=http://host.docker.internal:8186/k6
     volumes:
-      - ./k6:/scripts
+      - ./k6/load.js:/scripts/load.js
     depends_on:
-      - grafana
-    command: k6 run /scripts/load.js
-  
+      grafana:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: '5'
+    # command: k6 run /scripts/load.js
+    # entrypoint: [ "k6", "run", "/scripts/load.js"]
+    entrypoint: [ "k6", "run", "/scripts/load.js"]
+    # --out influxdb=http://host.docker.internal:8186

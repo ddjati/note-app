@@ -13,7 +13,7 @@ pub struct NoteModelResponse {
 }
 
 // For sqlx
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow, Clone)]
 #[allow(non_snake_case)]
 pub struct NoteModel {
     pub id: String,

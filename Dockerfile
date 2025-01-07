@@ -1,20 +1,32 @@
-# 1. This tells docker to use the Rust official image
-FROM rust:1.83 AS builder
+# Step 1: Compute a recipe file
+FROM rust:1.83 AS planner
+WORKDIR /note-app
+RUN cargo install cargo-chef
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
 
-# create a new empty shell project
+# Step 2: Cache project dependencies
+FROM rust:1.83 AS cacher
+WORKDIR /note-app
+RUN cargo install cargo-chef
+COPY --from=planner /note-app/recipe.json recipe.json
+RUN cargo chef cook --recipe-path recipe.json
+
+# Step 3: Build the binary
+FROM rust:1.83 AS builder
 WORKDIR /note-app
 COPY . .
-RUN cargo build --release
+# Copy over the cached dependencies from above
+COPY --from=cacher /note-app/target target
+COPY --from=cacher /usr/local/cargo /usr/local/cargo
+RUN cargo build --bin note-app
 
 # our final base
-# FROM debian:buster-slim
-# FROM debian:bullseye
-# FROM debian:bookworm-slim
 FROM debian:stable-slim
 
 # copy the build artifact from the build stage
-COPY --from=builder /note-app/target/release/note-app ./note-app
-COPY --from=builder /note-app/.env ./.env
+COPY --from=builder /note-app/target/debug/note-app ./note-app
+# COPY --from=builder /note-app/.env ./.env
 
 USER root
 

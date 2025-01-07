@@ -7,13 +7,16 @@ use std::sync::Arc;
 
 use axum::http::{header::CONTENT_TYPE, Method};
 use dotenv::dotenv;
+use model::NoteModel;
 use route::create_router;
 use sqlx::{mysql::MySqlPoolOptions, MySqlPool};
+use timedmap::TimedMap;
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
 
 pub struct AppState {
     db: MySqlPool,
+    temp_map: TimedMap<String, NoteModel>,
 }
 
 #[tokio::main]
@@ -26,6 +29,7 @@ async fn main() {
         .expect("env var MAX_DB_CONNECTIONS must set")
         .parse::<u32>()
         .expect("MAX_DB_CONNECTIONS expect u32");
+    println!("MAX_DB_CONNECTIONS = {}", max_db_connections);
     let pool = match MySqlPoolOptions::new()
         .max_connections(max_db_connections)
         .connect(&db_url)
@@ -49,7 +53,11 @@ async fn main() {
         .allow_origin(Any)
         .allow_headers([CONTENT_TYPE]);
 
-    let app = create_router(Arc::new(AppState { db: pool.clone() })).layer(cors);
+    let app_state = Arc::new(AppState {
+        db: pool.clone(),
+        temp_map: TimedMap::new(),
+    });
+    let app = create_router(app_state).layer(cors);
 
     println!("✅ Server started successfully at 0.0.0.0:8080");
 

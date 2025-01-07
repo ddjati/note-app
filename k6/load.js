@@ -12,22 +12,24 @@ const reqHeader = {
 
 export let options = {
     stages: [
-        { duration: '4s', target: 32 }, // Ramp-up to 20 VUs
-        { duration: '8s', target: 20 },  // Stay at 20 VUs for 1 minute
-        { duration: '16s', target: 0 },  // Ramp-down to 0 VUs
+        { duration: '5s', target: 100 }, // Ramp-up to 64 VUs
+        { duration: '5s', target: 200 },  // Ramp-up to 128 VUs
+        { duration: '5s', target: 0 },  // Ramp-down to 0 VUs
     ],
+    summaryTrendStats: ["min", "med", "max", "p(95)", "p(99)", "p(99.9)"],
     thresholds: {
-        'http_req_duration': ['p(95)<500'], // 95% of requests must complete below 500ms
-        'my_trend': ['avg<200'], // Custom threshold for the custom metric
+        'http_req_duration': ['p(99)<500'], // 95% of requests must complete below 500ms
+        // 'my_trend': ['avg<200'], // Custom threshold for the custom metric
     },
 };
 
 export default function () {
-    let res = http.get("http://localhost:8080/api/notes/f1cd96ca-0515-49de-be6d-3e238748668e", reqHeader);
+    // let res = http.get("http://note-app:8080/api/notes/f1cd96ca-0515-49de-be6d-3e238748668e", reqHeader);
+    let res = http.get("http://note-app:8080/api/cached_notes/f1cd96ca-0515-49de-be6d-3e238748668e", reqHeader);
     let checkRes = check(res, {
         'status is 200': (r) => r.status === 200,
     });
-    myTrend.add(res.timings.duration);
+    // myTrend.add(res.timings.duration);
 }
 
 export function handleSummary(data) {

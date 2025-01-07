@@ -16,6 +16,7 @@ sqlx = { version = "0.8.2", features = [
     "chrono",
     "uuid",
 ] }
+timedmap = { version = "1.0.2", features = ["tokio"] }
 tokio = { version = "1.42.0", features = ["full"] }
 tower-http = { version = "0.6.2", features = ["cors"] }
 uuid = { version = "1.11.0", features = ["serde", "v4"] }

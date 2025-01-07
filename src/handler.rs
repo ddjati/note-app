@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use axum::{
     extract::{Path, Query, State},
@@ -7,6 +7,7 @@ use axum::{
     Json,
 };
 use serde_json::json;
+use sqlx::Error;
 
 use crate::{model::*, schema::*, AppState};
 
@@ -19,6 +20,147 @@ pub async fn health_check_handler() -> impl IntoResponse {
     });
 
     return Json(json_response);
+}
+
+async fn get_note(id: &String, app: &Arc<AppState>) -> Result<NoteModel, Error> {
+    // get using query macro
+    let query_result = sqlx::query_as::<_, NoteModel>("SELECT * FROM notes WHERE id = ?")
+        .bind(id)
+        .fetch_one(&app.db)
+        .await;
+
+    // check & response
+    match query_result {
+        Ok(note) => {
+            return Ok(note);
+        }
+        Err(e) => {
+            return Err(e);
+        }
+    }
+}
+
+fn to_ok_note_response(note: NoteModel) -> Json<serde_json::Value> {
+    let note_response = serde_json::json!({
+        "status": "success",
+        "data": serde_json::json!({
+            "note": to_note_response(&note)
+        })
+    });
+    return Json(note_response);
+}
+
+pub async fn get_note_handler(
+    Path(id): Path<String>,
+    State(app): State<Arc<AppState>>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    // get using query macro
+    let query_result = get_note(&id, &app).await;
+
+    // check & response
+    match query_result {
+        Ok(note) => {
+            return Ok(to_ok_note_response(note));
+        }
+        Err(sqlx::Error::RowNotFound) => {
+            let error_response = serde_json::json!({
+                "status": "fail",
+                "message": format!("Note with ID: {} not found", id)
+            });
+            return Err((StatusCode::NOT_FOUND, Json(error_response)));
+        }
+        Err(e) => {
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"status": "error","message": format!("{:?}", e)})),
+            ));
+        }
+    }
+}
+
+pub async fn get_note_handler_cached(
+    Path(id): Path<String>,
+    State(app): State<Arc<AppState>>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    let cached_note = app.temp_map.get(&id);
+    if cached_note.is_some() {
+        let note = cached_note.unwrap();
+        return Ok(to_ok_note_response(note));
+    }
+    // get using query macro
+    let query_result = get_note(&id, &app).await;
+
+    // check & response
+    match query_result {
+        Ok(note) => {
+            app.temp_map
+                .insert(id, note.clone(), Duration::from_millis(1));
+            let note_response = serde_json::json!({
+                "status": "success",
+                "data": serde_json::json!({
+                    "note": to_note_response(&note)
+                })
+            });
+
+            return Ok(Json(note_response));
+        }
+        Err(sqlx::Error::RowNotFound) => {
+            let error_response = serde_json::json!({
+                "status": "fail",
+                "message": format!("Note with ID: {} not found", id)
+            });
+            return Err((StatusCode::NOT_FOUND, Json(error_response)));
+        }
+        Err(e) => {
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"status": "error","message": format!("{:?}", e)})),
+            ));
+        }
+    }
+}
+
+pub async fn get_note_handler_thunder(
+    Path(id): Path<String>,
+    State(app): State<Arc<AppState>>,
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    let cached_note = app.temp_map.get(&id);
+    
+    if cached_note.is_some() {
+        let note = cached_note.unwrap();
+        return Ok(to_ok_note_response(note));
+    }
+    // get using query macro
+    let query_result = get_note(&id, &app).await;
+
+    // check & response
+    match query_result {
+        Ok(note) => {
+            app.temp_map
+                .insert(id, note.clone(), Duration::from_millis(1));
+            let note_response = serde_json::json!({
+                "status": "success",
+                "data": serde_json::json!({
+                    "note": to_note_response(&note)
+                })
+            });
+
+            return Ok(Json(note_response));
+        }
+        Err(sqlx::Error::RowNotFound) => {
+            let error_response = serde_json::json!({
+                "status": "fail",
+                "message": format!("Note with ID: {} not found", id)
+            });
+            return Err((StatusCode::NOT_FOUND, Json(error_response)));
+        }
+        Err(e) => {
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"status": "error","message": format!("{:?}", e)})),
+            ));
+        }
+    }
 }
 
 pub async fn note_list_handler(
@@ -110,44 +252,6 @@ pub async fn create_note_handler(
     });
 
     return Ok(Json(note_response));
-}
-
-pub async fn get_note_handler(
-    Path(id): Path<String>,
-    State(data): State<Arc<AppState>>,
-) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    // get using query macro
-    let query_result = sqlx::query_as::<_, NoteModel>("SELECT * FROM notes WHERE id = ?")
-        .bind(&id)
-        .fetch_one(&data.db)
-        .await;
-
-    // check & response
-    match query_result {
-        Ok(note) => {
-            let note_response = serde_json::json!({
-                "status": "success",
-                "data": serde_json::json!({
-                    "note": to_note_response(&note)
-                })
-            });
-
-            return Ok(Json(note_response));
-        }
-        Err(sqlx::Error::RowNotFound) => {
-            let error_response = serde_json::json!({
-                "status": "fail",
-                "message": format!("Note with ID: {} not found", id)
-            });
-            return Err((StatusCode::NOT_FOUND, Json(error_response)));
-        }
-        Err(e) => {
-            return Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(json!({"status": "error","message": format!("{:?}", e)})),
-            ));
-        }
-    }
 }
 
 pub async fn edit_note_handler(
