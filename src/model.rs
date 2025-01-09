@@ -13,14 +13,16 @@ pub struct NoteModelResponse {
 }
 
 // For sqlx
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow, Clone)]
+#[derive(Debug, Default, Deserialize, Serialize, sqlx::FromRow, Clone)]
 #[allow(non_snake_case)]
 pub struct NoteModel {
     pub id: String,
     pub title: String,
     pub content: String,
     pub is_published: i8,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub created_at: Option<chrono::DateTime<chrono::Utc>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 

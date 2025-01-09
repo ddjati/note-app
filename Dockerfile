@@ -24,6 +24,9 @@ RUN cargo build --bin note-app
 # our final base
 FROM debian:stable-slim
 
+# Install cURL
+RUN apt-get update && apt-get install -y curl && apt-get clean
+
 # copy the build artifact from the build stage
 COPY --from=builder /note-app/target/debug/note-app ./note-app
 # COPY --from=builder /note-app/.env ./.env

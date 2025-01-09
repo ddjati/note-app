@@ -11,6 +11,11 @@ services:
       resources:
         limits:
           cpus: '0.3'
+    healthcheck:
+      test: mysql ${MYSQL_DATABASE} --user=${MYSQL_USER} --password='${MYSQL_PASSWORD}' --silent --execute "SELECT 1;"
+      interval: 30s
+      timeout: 10s
+      retries: 5
     volumes:
         - ./init_db/init.sql:/data/application/init.sql
   
@@ -28,9 +33,14 @@ services:
       resources:
         limits:
           cpus: '1'
+    healthcheck:
+      test: curl -f http://localhost:8080/api/healthcheck || exit 1
+      interval: 2s
+      timeout: 60s
+      retries: 2
     depends_on:
       mysql:
-        condition: service_started
+        condition: service_healthy
   
   influxdb:
     container_name: influxdb
@@ -45,7 +55,7 @@ services:
           cpus: '0.5'
     depends_on:
       note-app:
-        condition: service_started
+        condition: service_healthy
 
   grafana:
     container_name: grafana
@@ -72,7 +82,7 @@ services:
     ports:
       - "6565:6565"
     environment:
-      - K6_OUT=influxdb=http://host.docker.internal:8186/k6
+      - K6_OUT=influxdb=http://0.0.0.0:8186/k6
     volumes:
       - ./k6/load.js:/scripts/load.js
     depends_on:

@@ -8,7 +8,7 @@ use axum::{
 use crate::{
     handler::{
         create_note_handler, delete_note_handler, edit_note_handler, get_note_handler,
-        get_note_handler_cached, health_check_handler, note_list_handler,
+        get_note_handler_cached, get_note_handler_thunder, health_check_handler, note_list_handler,
     },
     AppState,
 };
@@ -25,5 +25,6 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
                 .delete(delete_note_handler),
         )
         .route("/api/cached_notes/:id", get(get_note_handler_cached))
+        .route("/api/thunder_notes/:id", get(get_note_handler_thunder))
         .with_state(app_state)
 }

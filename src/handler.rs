@@ -1,4 +1,4 @@
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 
 use axum::{
     extract::{Path, Query, State},
@@ -82,7 +82,7 @@ pub async fn get_note_handler_cached(
     Path(id): Path<String>,
     State(app): State<Arc<AppState>>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let cached_note = app.temp_map.get(&id);
+    let cached_note = app.note_cache.get(&id).await;
     if cached_note.is_some() {
         let note = cached_note.unwrap();
         return Ok(to_ok_note_response(note));
@@ -93,8 +93,7 @@ pub async fn get_note_handler_cached(
     // check & response
     match query_result {
         Ok(note) => {
-            app.temp_map
-                .insert(id, note.clone(), Duration::from_millis(1));
+            app.note_cache.insert(id, note.clone()).await;
             let note_response = serde_json::json!({
                 "status": "success",
                 "data": serde_json::json!({
@@ -124,10 +123,17 @@ pub async fn get_note_handler_thunder(
     Path(id): Path<String>,
     State(app): State<Arc<AppState>>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
-    let cached_note = app.temp_map.get(&id);
-    
-    if cached_note.is_some() {
-        let note = cached_note.unwrap();
+    let cached_note = app.note_cache.get(&id).await;
+
+    if let Some(note) = cached_note {
+        return Ok(to_ok_note_response(note));
+    }
+
+    //start synchronized
+    let _lock = app.mutex.lock().await;
+    let cached_note = app.note_cache.get(&id).await;
+
+    if let Some(note) = cached_note {
         return Ok(to_ok_note_response(note));
     }
     // get using query macro
@@ -136,14 +142,15 @@ pub async fn get_note_handler_thunder(
     // check & response
     match query_result {
         Ok(note) => {
-            app.temp_map
-                .insert(id, note.clone(), Duration::from_millis(1));
+            // app.temp_map
+            //     .insert(id, note.clone(), Duration::from_millis(1));
             let note_response = serde_json::json!({
                 "status": "success",
                 "data": serde_json::json!({
                     "note": to_note_response(&note)
                 })
             });
+            app.note_cache.insert(id, note.clone()).await;
 
             return Ok(Json(note_response));
         }
