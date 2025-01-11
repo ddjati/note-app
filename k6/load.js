@@ -11,26 +11,32 @@ const reqHeader = {
 }
 
 export let options = {
-    stages: [
-        { duration: '5s', target: 100 }, // Ramp-up to 100 VUs
-        { duration: '5s', target: 200 },  // Ramp-up to 200 VUs
-        { duration: '5s', target: 0 },  // Ramp-down to 0 VUs
-    ],
+    vus: 200,
+    duration: '5s',
     summaryTrendStats: ["min", "med", "max", "p(95)", "p(99)", "p(99.9)"],
     thresholds: {
-        'http_req_duration': ['p(99)<500'], // 95% of requests must complete below 500ms
+        'http_req_duration': ['p(99)<500'], // 99% of requests must complete below 500ms
         // 'my_trend': ['avg<200'], // Custom threshold for the custom metric
     },
 };
 
 export default function () {
-    // let res = http.get("http://note-app:8080/api/notes/f1cd96ca-0515-49de-be6d-3e238748668e", reqHeader);
-    // let res = http.get("http://note-app:8080/api/cached_notes/f1cd96ca-0515-49de-be6d-3e238748668e", reqHeader);
-    let res = http.get("http://note-app:8080/api/thunder_notes/f1cd96ca-0515-49de-be6d-3e238748668e", reqHeader);
+    let res = getThunderNote()
     let checkRes = check(res, {
-        'status is 200': (r) => r.status === 200,
+        'status is 200': (r) => (r.status === 200),
     });
-    // myTrend.add(res.timings.duration);
+}
+
+function getDbNote() {
+    return http.get("http://note-app:8080/api/notes/f1cd96ca-0515-49de-be6d-3e238748668e", reqHeader);
+}
+
+function getCachedNote() {
+    return http.get("http://note-app:8080/api/cached_notes/f1cd96ca-0515-49de-be6d-3e238748668e", reqHeader);
+}
+
+function getThunderNote() {
+    return http.get("http://note-app:8080/api/thunder_notes/f1cd96ca-0515-49de-be6d-3e238748668e", reqHeader);
 }
 
 export function handleSummary(data) {
@@ -38,4 +44,10 @@ export function handleSummary(data) {
         "scriptReport.html": htmlReport(data),
         stdout: textSummary(data, { indent: " ", enableColors: true })
     };
+}
+
+export function teardown(data) {
+    // 4. teardown code
+    let res = http.get("http://note-app:8080/api/metrics", reqHeader);
+    console.log(res.json().data);
 }
