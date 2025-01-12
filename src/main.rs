@@ -3,11 +3,7 @@ mod model;
 mod route;
 mod schema;
 
-use std::{
-    collections::HashMap,
-    sync::{atomic::AtomicUsize, Arc},
-    time::Duration,
-};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 
 use axum::http::{header::CONTENT_TYPE, Method};
 use dotenv::dotenv;
@@ -25,8 +21,6 @@ pub struct AppState {
     db: MySqlPool,
     note_cache: Cache<String, NoteModel>,
     mutex_map: RwLock<HashMap<String, Mutex<bool>>>,
-    map_mutex: Mutex<bool>,
-    db_hit_counter: AtomicUsize,
 }
 
 fn _main() {
@@ -53,14 +47,17 @@ async fn main() {
         .allow_headers([CONTENT_TYPE]);
 
     let pool = get_my_sql_pool().await;
+    let cache_ttl_millis: u64 = std::env::var("CACHE_TTL_MILLIS")
+        .expect("env var CACHE_TTL_MILLIS must set")
+        .parse::<u64>()
+        .expect("CACHE_TTL_MILLIS expect u64");
+    tracing::debug!("CACHE_TTL_MILLIS = {}", cache_ttl_millis);
     let app_state = Arc::new(AppState {
         db: pool.clone(),
         note_cache: Cache::builder()
-            .time_to_live(Duration::from_millis(2))
+            .time_to_live(Duration::from_millis(cache_ttl_millis))
             .build(),
-        map_mutex: Mutex::new(false),
         mutex_map: RwLock::new(HashMap::new()),
-        db_hit_counter: AtomicUsize::new(0),
     });
     let app = create_router(app_state).layer(cors);
 
