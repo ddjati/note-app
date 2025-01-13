@@ -20,7 +20,7 @@ const reqHeader = {
 
 export let options = {
     vus: 300, // 300 users simultaneously
-    duration: '5s', // load test for 30s
+    duration: '5s', // load test for 5s
     summaryTrendStats: ["min", "med", "max", "p(95)", "p(99)", "p(99.9)"],
     thresholds: {
         'http_req_duration': ['p(99)<500'], // 99% of requests must below 500ms

@@ -197,15 +197,4 @@ pub async fn get_note_handler_thunder(
             return Err(err_internal_server(e));
         }
     }
-
-    // let read_mtx_map = app.mutex_map.read().await;
-
-    // let mut lock = read_mtx_map.get(&id).unwrap().lock().await;
-    // if *lock {
-    //     panic!("Lock is used in another Task/Thread");
-    // }
-    // *lock = true;
-    // let json = get_note_cached(id.to_string(), &app).await;
-    // *lock = false;
-    // return json;
 }
