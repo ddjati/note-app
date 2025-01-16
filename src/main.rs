@@ -46,14 +46,13 @@ async fn main() {
         .allow_origin(Any)
         .allow_headers([CONTENT_TYPE]);
 
-    let pool = get_my_sql_pool().await;
     let cache_ttl_millis: u64 = std::env::var("CACHE_TTL_MILLIS")
         .expect("env var CACHE_TTL_MILLIS must set")
         .parse::<u64>()
         .expect("CACHE_TTL_MILLIS expect u64");
     tracing::debug!("CACHE_TTL_MILLIS = {}", cache_ttl_millis);
     let app_state = Arc::new(AppState {
-        db: pool.clone(),
+        db: get_my_sql_pool().await;,
         note_cache: Cache::builder()
             .time_to_live(Duration::from_millis(cache_ttl_millis))
             .build(),

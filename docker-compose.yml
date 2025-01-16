@@ -7,16 +7,53 @@ services:
     ports:
       - '13306:3306'
     command: --init-file /data/application/init.sql
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+    healthcheck:
+      test: mysql ${MYSQL_DATABASE} --user=${MYSQL_USER} --password='${MYSQL_PASSWORD}' --silent --execute "SELECT 1;"
+      interval: 30s
+      timeout: 10s
+      retries: 5
     volumes:
         - ./init_db/init.sql:/data/application/init.sql
   
   note-app:
     container_name: note-app
     image: danangdjati/note-app:1.0.0
+    env_file:
+      - .env
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - '8080:8080'
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+    healthcheck:
+      test: curl -f http://localhost:8080/api/healthcheck || exit 1
+      interval: 2s
+      timeout: 60s
+      retries: 2
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
+
+  k6:
+    container_name: k6
+    image: grafana/k6:0.56.0
+    ports:
+      - "6565:6565"
+    volumes:
+      - ./k6/load.js:/scripts/load.js
+    depends_on:
+      note-app:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '5'
+    entrypoint: [ "k6", "run", "/scripts/load.js"]

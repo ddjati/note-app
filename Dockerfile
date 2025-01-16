@@ -2,7 +2,9 @@
 FROM rust:1.83 AS planner
 WORKDIR /note-app
 RUN cargo install cargo-chef
-COPY . .
+COPY ./src ./src
+COPY ./Cargo.lock ./Cargo.lock
+COPY ./Cargo.toml ./Cargo.toml
 RUN cargo chef prepare --recipe-path recipe.json
 
 # Step 2: Cache project dependencies
@@ -15,7 +17,9 @@ RUN cargo chef cook --recipe-path recipe.json
 # Step 3: Build the binary
 FROM rust:1.83 AS builder
 WORKDIR /note-app
-COPY . .
+COPY ./src ./src
+COPY ./Cargo.lock ./Cargo.lock
+COPY ./Cargo.toml ./Cargo.toml
 # Copy over the cached dependencies from above
 COPY --from=cacher /note-app/target target
 COPY --from=cacher /usr/local/cargo /usr/local/cargo
