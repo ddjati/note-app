@@ -33,7 +33,7 @@ pub struct Metrics {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub is_from_db: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub db_duration: Option<u128>, // duration in millis
+    pub db_duration: Option<u128>, // duration in microsec
 }
 
 //Convert DB Model to Response

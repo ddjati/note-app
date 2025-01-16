@@ -21,11 +21,11 @@ build_debug:
 	@cargo build
 run:
 	@echo "Running debug"
-	@cargo run
+	@docker compose up note-app -d
 runk6:
-	@docker compose -f docker-compose-k6.yml up
+	@docker compose up k6
 downk6:
-	@docker compose -f docker-compose-k6.yml down
+	@docker compose down
 debug_run: build_debug run
 install_debug: build_debug
 	@echo "Installing debug"

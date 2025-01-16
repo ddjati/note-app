@@ -17,10 +17,9 @@ services:
       timeout: 10s
       retries: 5
     volumes:
-        - ./init_db/init.sql:/data/application/init.sql
-  
+      - ./init_db/init.sql:/data/application/init.sql
+
   note-app:
-    container_name: note-app
     image: danangdjati/note-app:1.0.0
     env_file:
       - .env
@@ -33,6 +32,7 @@ services:
       resources:
         limits:
           cpus: '1'
+      replicas: 2
     healthcheck:
       test: curl -f http://localhost:8080/api/healthcheck || exit 1
       interval: 2s
@@ -56,4 +56,4 @@ services:
       resources:
         limits:
           cpus: '5'
-    entrypoint: [ "k6", "run", "/scripts/load.js"]
+    entrypoint: [ "k6", "run", "/scripts/load.js" ]

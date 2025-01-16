@@ -6,13 +6,13 @@ import { textSummary } from "https://jslib.k6.io/k6-summary/0.0.1/index.js";
 export const requests = new Counter('http_reqs');
 
 // const scenario = ['Direct DB test summary', getDbNote];
-// const scenario = ['Caching test summary', getCachedNote];
-const scenario = ['Thundering Herd Prevention test summary', getThunderNote];
+const scenario = ['Caching test summary', getCachedNote];
+// const scenario = ['Thundering Herd Prevention test summary', getThunderNote];
 
 // Define custom metrics
 const isFromDbCounter = new Counter('is_from_db_counter');
 const isFromDbRate = new Rate('is_from_db_rate');
-const dbDurationTrend = new Trend('db_duration_millis_trend');
+const dbDurationTrend = new Trend('db_duration_micros_trend');
 
 const reqHeader = {
     headers: { 'Content-Type': 'application/json' },

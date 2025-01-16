@@ -10,7 +10,7 @@ use serde_json::json;
 use sqlx::Error;
 use tokio::{sync::Mutex, time::Instant};
 
-use crate::{model::*, AppState};
+use crate::{model::*, service::*};
 
 pub async fn health_check_handler() -> impl IntoResponse {
     const MESSAGE: &str = "API Services";
@@ -30,16 +30,13 @@ async fn get_note_from_db(id: &String, app: &Arc<AppState>) -> Result<(NoteModel
         .bind(id)
         .fetch_one(&app.db)
         .await;
-    let stop = Instant::now();
 
     let mut mtr = Metrics {
         is_from_db: Some(true),
         ..Default::default()
     };
 
-    if let Some(duration) = stop.checked_duration_since(start) {
-        mtr.db_duration = Some(duration.as_millis());
-    }
+    mtr.db_duration = Some(start.elapsed().as_micros());
 
     // check & response
     match query_result {
