@@ -32,7 +32,6 @@ services:
       resources:
         limits:
           cpus: '1'
-      replicas: 2
     healthcheck:
       test: curl -f http://localhost:8080/api/healthcheck || exit 1
       interval: 2s
