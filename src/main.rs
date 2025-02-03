@@ -4,6 +4,8 @@ mod route;
 mod schema;
 pub mod service;
 
+use std::net::{Ipv4Addr, SocketAddr};
+
 use dotenv::dotenv;
 use model::NoteModel;
 use route::create_router;
@@ -27,12 +29,13 @@ async fn main() {
     dotenv().ok();
     println!("🌟 REST API Service 🌟");
 
-    let app = create_router().await;
+    let router = create_router().await;
 
-    println!("✅ Server started successfully at 0.0.0.0:8080");
-
-    let listener = TcpListener::bind("0.0.0.0:8080").await.unwrap();
-    axum::serve(listener, app.into_make_service())
+    //0.0.0.0:8080
+    let address = SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), 8080);
+    let listener = TcpListener::bind(address).await.unwrap();
+    println!("✅ Server started successfully at {}", address.to_string());
+    axum::serve(listener, router.into_make_service())
         .with_graceful_shutdown(shutdown_signal())
         .await
         .unwrap();

@@ -10,8 +10,8 @@ export const requests = new Counter('http_reqs');
 const scenario = ['Thundering Herd Prevention test summary', getThunderNote];
 
 // Define custom metrics
-const isFromDbCounter = new Counter('is_from_db_counter');
-const isFromDbRate = new Rate('is_from_db_rate');
+const isFromDbCounter = new Counter('db_hit_counter');
+const isFromDbRate = new Rate('db_hit_rate');
 const dbDurationTrend = new Trend('db_duration_micros_trend');
 
 const reqHeader = {
@@ -21,7 +21,7 @@ const reqHeader = {
 export let options = {
     vus: 300, // 300 users simultaneously
     duration: '5s', // load test for 5s
-    summaryTrendStats: ["min", "med", "max", "p(95)", "p(99)", "p(99.9)"],
+    summaryTrendStats: ["min", "p(20)", "med", "max", "p(95)", "p(99)", "p(99.9)"],
     thresholds: {
         'http_req_duration': ['p(99)<500'], // 99% of requests must below 500ms
     },
@@ -53,29 +53,23 @@ export default function () {
 }
 
 function getDbNote() {
-    return http.get("http://note-app:8080/api/notes/f1cd96ca-0515-49de-be6d-3e238748668e", reqHeader);
+    // return http.get("http://note-app:8080/api/notes/f1cd96ca-0515-49de-be6d-3e238748668e", reqHeader);
+    return http.get("http://localhost:8080/api/notes/f1cd96ca-0515-49de-be6d-3e238748668e", reqHeader);
 }
 
 function getCachedNote() {
-    return http.get("http://note-app:8080/api/cached_notes/f1cd96ca-0515-49de-be6d-3e238748668e", reqHeader);
+    // return http.get("http://note-app:8080/api/cached_notes/f1cd96ca-0515-49de-be6d-3e238748668e", reqHeader);
+    return http.get("http://localhost:8080/api/cached_notes/f1cd96ca-0515-49de-be6d-3e238748668e", reqHeader);
 }
 
 function getThunderNote() {
-    return http.get("http://note-app:8080/api/thunder_notes/f1cd96ca-0515-49de-be6d-3e238748668e", reqHeader);
+    // return http.get("http://note-app:8080/api/thunder_notes/f1cd96ca-0515-49de-be6d-3e238748668e", reqHeader);
+    return http.get("http://localhost:8080/api/thunder_notes/f1cd96ca-0515-49de-be6d-3e238748668e", reqHeader);
 }
 
 export function handleSummary(data) {
     return {
-        // "scriptReport.html": htmlReport(data),
         stdout: scenario[0] + `\n\n${textSummary(data, { indent: ' ', enableColors: true })}`,
     };
 
-    // return {
-    //     'stdout': JSON.stringify({
-    //         metrics: data.metrics,
-    //         isFromDbCounter: data.metrics.is_from_db_counter,
-    //         isFromDbRate: data.metrics.is_from_db_rate,
-    //         dbDurationTrend: data.metrics.db_duration_trend,
-    //     }, null, 2),
-    // };
 }

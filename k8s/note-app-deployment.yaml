@@ -1,26 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose convert
-    kompose.version: 1.34.0 (cbf2835db)
   labels:
-    # io.kompose.service: note-app
     app: note-app
   name: note-app
 spec:
   replicas: 2
   selector:
     matchLabels:
-      # io.kompose.service: note-app
       app: note-app
   template:
     metadata:
-      # annotations:
-      #   kompose.cmd: kompose convert
-      #   kompose.version: 1.34.0 (cbf2835db)
       labels:
-        # io.kompose.service: note-app
         app: note-app
     spec:
       containers:
@@ -55,29 +46,15 @@ spec:
                 configMapKeyRef:
                   key: MYSQL_PASSWORD
                   name: env
-            - name: MYSQL_ROOT_PASSWORD
-              valueFrom:
-                configMapKeyRef:
-                  key: MYSQL_ROOT_PASSWORD
-                  name: env
             - name: MYSQL_USER
               valueFrom:
                 configMapKeyRef:
                   key: MYSQL_USER
                   name: env
           image: danangdjati/note-app:1.0.0
-          livenessProbe:
-            exec:
-              command:
-                - curl -f http://localhost:8080/api/healthcheck || exit 1
-            failureThreshold: 2
-            periodSeconds: 2
-            timeoutSeconds: 60
+          imagePullPolicy: Never
           name: note-app
           ports:
             - containerPort: 8080
-              protocol: TCP
           resources:
-            limits:
-              cpu: "1"
       restartPolicy: Always

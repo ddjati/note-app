@@ -1,10 +1,11 @@
 apiVersion: v1
 data:
   CACHE_TTL_MILLIS: "3"
-  DATABASE_URL: mysql://user:password123@mysql/rust_axum_sqlx
+  DATABASE_URL: mysql://user:password123@mysql:13306/rust_axum_sqlx
   MAX_DB_CONNECTIONS: "100"
   MYSQL_DATABASE: rust_axum_sqlx
   MYSQL_HOST: mysql
+  MYSQL_PORT: "13306"
   MYSQL_PASSWORD: password123
   MYSQL_ROOT_PASSWORD: password123
   MYSQL_USER: user

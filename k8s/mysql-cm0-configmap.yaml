@@ -33,5 +33,5 @@ metadata:
   annotations:
     use-subpath: "true"
   labels:
-    io.kompose.service: mysql
+    app: mysql
   name: mysql-cm0

@@ -1,0 +1,15 @@
+services:
+
+  k6:
+    container_name: k6
+    image: grafana/k6:0.56.0
+    network_mode: host
+    ports:
+      - "6565:6565"
+    volumes:
+      - ./k6/load.js:/scripts/load.js
+    deploy:
+      resources:
+        limits:
+          cpus: '5'
+    entrypoint: [ "k6", "run", "/scripts/load.js" ]

@@ -1,4 +1,4 @@
-### Health Check
+### Metrics
 GET http://localhost:8080/api/metrics
 
 ### Health Check
