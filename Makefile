@@ -15,10 +15,7 @@ check:
 	@cargo check
 build_release:
 	@echo "Building release: $(VERSION)"
-	@cargo build --release
-build_debug:
-	@echo "Building debug"
-	@cargo build
+	@./build.sh
 run:
 	@echo "Running debug"
 	@docker compose up note-app -d
