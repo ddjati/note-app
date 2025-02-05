@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: k6
+  name: k6
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k6
+  template:
+    metadata:
+      labels:
+        app: k6
+    spec:
+      containers:
+        - command:
+            - k6
+            - run
+            - /scripts/load.js
+          image: grafana/k6:0.56.0
+          name: k6
+          ports:
+            - containerPort: 6565
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /scripts/load.js
+              name: k6-cm0
+              subPath: load.js
+      restartPolicy: Always
+      volumes:
+        - configMap:
+            items:
+              - key: load.js
+                path: load.js
+            name: k6-cm0
+          name: k6-cm0
