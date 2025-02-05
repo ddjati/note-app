@@ -1,15 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  labels:
-    run: note-app
-  name: note-app
+  name: note-app-service
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
-    - name: "8080"
-      port: 8080
+    - port: 8080
       targetPort: 8080
-      protocol: TCP
   selector:
     app: note-app

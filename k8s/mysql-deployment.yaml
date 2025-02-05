@@ -54,6 +54,10 @@ spec:
           ports:
             - containerPort: 3306
               # protocol: TCP
+          resources:
+            limits:
+              cpu: 40m
+              memory: 800Mi
           volumeMounts:
             - mountPath: /data/application/init.sql
               name: mysql-cm0

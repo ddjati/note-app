@@ -1,14 +1,14 @@
 ### Metrics
-GET http://localhost:8080/api/metrics
+GET http://note-app.local/api/metrics
 
 ### Health Check
-GET http://localhost:8080/api/healthcheck
+GET http://note-app.local/api/healthcheck
 
 ### List
-GET http://localhost:8080/api/notes
+GET http://note-app.local/api/notes
 
 ### Create
-POST http://localhost:8080/api/notes
+POST http://note-app.local/api/notes
 content-type: application/json
 
 {
@@ -18,16 +18,16 @@ content-type: application/json
 }
 
 ### Read
-GET http://localhost:8080/api/notes/f1cd96ca-0515-49de-be6d-3e238748668e
+GET http://note-app.local/api/notes/f1cd96ca-0515-49de-be6d-3e238748668e
 
 ### Read
-GET http://localhost:8080/api/cached_notes/f1cd96ca-0515-49de-be6d-3e238748668e
+GET http://note-app.local/api/cached_notes/f1cd96ca-0515-49de-be6d-3e238748668e
 
 ### Read
-GET http://localhost:8080/api/thunder_notes/f1cd96ca-0515-49de-be6d-3e238748668e
+GET http://note-app.local/api/thunder_notes/f1cd96ca-0515-49de-be6d-3e238748668e
 
 ### Update
-PATCH http://localhost:8080/api/notes/f1cd96ca-0515-49de-be6d-3e238748668e
+PATCH http://note-app.local/api/notes/f1cd96ca-0515-49de-be6d-3e238748668e
 content-type: application/json
 
 {
@@ -35,4 +35,4 @@ content-type: application/json
 }
 
 ### Delete
-DELETE http://localhost:8080/api/notes/f1cd96ca-0515-49de-be6d-3e238748668e
+DELETE http://note-app.local/api/notes/f1cd96ca-0515-49de-be6d-3e238748668e

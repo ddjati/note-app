@@ -11,5 +11,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '5'
+          cpus: '2'
+    extra_hosts:
+        - "note-app.local:192.168.49.2" #host and ip
     entrypoint: [ "k6", "run", "/scripts/load.js" ]
